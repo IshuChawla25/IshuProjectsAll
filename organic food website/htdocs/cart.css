@@ -1,0 +1,113 @@
+.body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+}
+.cart-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.cart-header h1 {
+    font-size: 2.5em;
+    color: #4CAF50;
+}
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+.cart-table th {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+.cart-table td{
+    padding: 15px;
+    text-align:left;
+    border-bottom: 1px solid #ddd;
+}
+.cart-table th {
+    background-color: #4CAF50;
+    color: white;
+}
+.cart-table img {
+    width: 100px;
+    height: auto;
+}
+.cart-table .product-name {
+    font-size: 1.2em;
+}
+.cart-table .product-price, .cart-table .product-quantity, .cart-table .product-total {
+    text-align: center;
+}
+.cart-table .product-quantity input {
+    width: 50px;
+    height: 27px;
+    text-align: center;
+}
+.cart-summary {
+    text-align: right;
+    margin-top: 20px;
+}
+.cart-summary h2 {
+    font-size: 1.5em;
+    color: #4CAF50;
+}
+.cart-summary .total-price {
+    font-size: 1.2em;
+    margin-top: 10px;
+}
+.checkout-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+}
+.checkout-btn:hover {
+    background-color: #45a049;
+}
+.reset-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-top: 10px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1.0em;
+}
+.reset-btn:hover {
+    background-color: darkred;
+}
+  .remove-item {
+    background-color: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 14px;
+  }
+
+  .remove-item:hover {
+    background-color: darkred;
+  }
+  .quantity-btn {
+    padding: 5px 10px;
+    margin: 0 5px;
+    border: 1px solid #ddd;
+    background-color: #f1f1f1;
+    cursor: pointer;
+  }
+  .quantity-btn:hover {
+    background-color: #ddd;
+  }

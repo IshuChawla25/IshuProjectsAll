@@ -1,0 +1,181 @@
+import React, { useState, useRef, useEffect } from "react";
+import "./style.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+
+const FlowerDetectionApp = () => {
+  const [image, setImage] = useState(null);
+  const [flowerDetails, setFlowerDetails] = useState(null);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(document.createElement("canvas"));
+  const streamRef = useRef(null); 
+
+  useEffect(() => {
+    if (cameraActive) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          streamRef.current = stream;
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.onloadedmetadata = () => {
+              videoRef.current.play().catch(error => console.error("Video play error:", error));
+            };
+          }
+        })
+        .catch((err) => {
+          console.error("Error accessing camera:", err);
+          alert("Camera access error: " + err.message);
+          setCameraActive(false);
+        });
+    } else {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+    }
+
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, [cameraActive]);
+
+  const handleImageUpload = async (event) => {
+    if (cameraActive) {
+      closeCamera(); 
+    }
+
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      setLoading(true);
+      const response = await fetch("http://127.0.0.1:5000/detect-flower", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+      setFlowerDetails(data); 
+      setImage(URL.createObjectURL(file)); 
+    } catch (error) {
+      console.error("Error detecting flower:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const captureImage = () => {
+    if (!videoRef.current || !canvasRef.current) {
+      console.error("Video or canvas element is not available.");
+      return;
+    }
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(async (blob) => {
+      const formData = new FormData();
+      formData.append("image", blob, "captured.png");
+
+      try {
+        setLoading(true);
+        const response = await fetch("http://127.0.0.1:5000/detect-flower", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+        setFlowerDetails(data); 
+        setImage(URL.createObjectURL(blob)); 
+      } catch (error) {
+        console.error("Error detecting flower:", error);
+      } finally {
+        setLoading(false);
+      }
+    }, "image/png");
+
+    closeCamera();
+  };
+
+  const closeCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setCameraActive(false);
+  };
+
+  const resetApp = () => {
+    setImage(null);
+    setFlowerDetails(null);
+    setLoading(false);
+    closeCamera();
+  };
+
+  const knowMore = () => {
+    if (flowerDetails?.name) {
+      const query = `Tell me more about the ${flowerDetails.name} flower.`;
+      window.open(`https://chatgpt.com/?prompt=${encodeURIComponent(query)}`);
+    }
+  };
+
+  return (
+    <div className="container text-center p-4 app-container">
+      <h1 className="text-danger">Flower Detection App</h1>
+      <div className="d-flex justify-content-center mb-4">
+        <input type="file" id="imageUpload" accept="image/*" className="d-none" onChange={handleImageUpload} />
+        <button className="btn btn-primary me-3" onClick={() => document.getElementById("imageUpload").click()}>Upload Image</button>
+        <button
+          className="btn btn-success me-3"
+          onClick={() => {
+            setImage(null);
+            setFlowerDetails(null);
+            setCameraActive(true);
+          }}
+        >
+          Open Camera
+        </button>
+        <button className="btn btn-danger" onClick={resetApp}>Reset</button>
+      </div>
+
+      {cameraActive && (
+        <div className="camera-container">
+          <h5 className="text-info">Live Camera Preview</h5>
+          <video ref={videoRef} autoPlay playsInline muted className="camera-video"></video>
+          <div>
+            <button className="btn btn-info me-3" onClick={captureImage}>Capture Image</button>
+            <button className="btn btn-danger" onClick={closeCamera}>Close Camera</button>
+          </div>
+        </div>
+      )}
+
+      {loading && <p className="text-warning mt-4">Detecting flower...</p>}
+
+      {image && <img src={image} alt="Detected" className="detected-image" />}
+
+      {flowerDetails && (
+        <div className="card mx-auto mt-4 flower-card">
+          <div className="card-body">
+            <h2 className="card-title text-primary">{flowerDetails.name}</h2>
+            <p className="card-text">{flowerDetails.season}</p>
+            <p className="card-text">{flowerDetails.description}</p>
+            <button className="btn btn-info mt-3" onClick={knowMore}>Know More</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FlowerDetectionApp;

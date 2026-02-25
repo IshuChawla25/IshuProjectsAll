@@ -1,0 +1,144 @@
+import os
+from flask import Flask, request, jsonify, session  # type: ignore
+from flask_cors import CORS  # type: ignore
+from werkzeug.utils import secure_filename  # type: ignore
+from datetime import datetime
+from transformers import pipeline
+from PIL import Image
+from pymongo import MongoClient  # MongoDB
+import secrets  # For generating a secret key
+
+# Flask app setup
+app = Flask(__name__)
+CORS(app)
+
+# Set the secret key for session management
+app.secret_key = secrets.token_hex(16)  # Generate a random secret key
+
+# Uploads folder setup
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# MongoDB setup
+client = MongoClient('mongodb://localhost:27017/')
+db = client['petalvision']  # database name
+users_collection = db['users']  # collection name
+
+# Load flower detection model
+classifier = pipeline("image-classification", model="dima806/flower_groups_image_detection")
+
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "Flask Server is Running!"})
+
+# Signup Route
+@app.route("/api/signup", methods=["POST"])
+def signup():
+    data = request.get_json()
+    name = data.get('name')
+    email = data.get('email')
+    password = data.get('password')
+
+    if not name or not email or not password:
+        return jsonify({"message": "Missing fields"}), 400
+
+    # Check if user already exists
+    existing_user = users_collection.find_one({"email": email})
+    if existing_user:
+        return jsonify({"message": "User already exists"}), 409
+
+    # Insert new user
+    users_collection.insert_one({
+        "name": name,
+        "email": email,
+        "password": password  # Note: Passwords should be hashed in real-world applications!
+    })
+
+    return jsonify({"message": "User registered successfully"}), 201
+
+# Login Route
+@app.route("/api/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    # Check if the user exists
+    user = users_collection.find_one({"email": email, "password": password})
+    if user:
+        session['user_email'] = email  # Store user's email in session
+        return jsonify({"message": "Login successful!"}), 200
+    else:
+        return jsonify({"message": "Invalid credentials"}), 401
+
+
+
+# Flower Detection Route
+@app.route("/detect-flower", methods=["POST"])
+def detect_flower():
+    if "image" not in request.files:
+        return jsonify({"error": "No image uploaded"}), 400
+
+    image = request.files["image"]
+    if image.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    original_filename = secure_filename(image.filename)
+    filename = f"{timestamp}_{original_filename}"
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    image.save(filepath)
+
+    try:
+        pil_image = Image.open(filepath).convert("RGB")
+        results = classifier(pil_image)
+        top_result = results[0] if results else {"label": "Unknown", "score": 0.0}
+    except Exception as e:
+        return jsonify({"error": f"Image classification failed: {str(e)}"}), 500
+
+    # Flower descriptions
+    flower_info = {
+        "daisy": {
+            "season": "Spring and Summer",
+            "description": "Daisies are bright, cheerful flowers with a yellow center and white petals."
+        },
+        "dandelion": {
+            "season": "Spring",
+            "description": "Dandelions are yellow flowering plants known for their puffball seed heads."
+        },
+        "sunflower": {
+            "season": "Summer",
+            "description": "Sunflowers are large yellow flowers that follow the sun across the sky."
+        },
+        "roses": {
+            "season": "Spring",
+            "description": "Roses are fragrant flowers with layered petals, commonly red, pink, or white."
+        },
+        "hydrangeas": {
+            "season": "Summer",
+            "description": "Hydrangeas symbolize a variety of emotions and attitudes, often depending on cultural context and even the specific color of the flower. Generally, they are associated with heartfelt emotions, gratitude, and unity."
+        },
+        "strawberries": {
+            "season": "Summer",
+            "description": "A strawberry is actually a multiple fruit which consists of many tiny individual fruits."
+        }
+    }
+
+    flower_name = top_result["label"].lower()
+    details = flower_info.get(flower_name, {
+        "season": "Unknown",
+        "description": "No additional information available for this flower."
+    })
+
+    response = {
+        "name": flower_name.capitalize(),
+        "season": details["season"],
+        "description": details["description"],
+        "confidence": f"{top_result['score']:.2%}",
+        "saved_filename": filename
+    }
+
+    return jsonify(response), 200
+
+if __name__ == "__main__":
+    app.run(debug=True)

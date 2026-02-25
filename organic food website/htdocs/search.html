@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organic Food Search</title>
+    <link rel="stylesheet" href="css/slick.css" />
+    <link rel="stylesheet" href="css/star-rating-svg.css" />
+    <link rel="stylesheet" href="css/search_style.css" />
+    <link rel="stylesheet" href="css/media.css" />
+</head>
+
+<body>
+    <header class="header">
+        <div class="header__fixed">
+            <div class="container header-wrapper">
+                <div class="burger"></div>
+                <a href="" class="header-logo">
+                    <img src="images/logo.jpg" alt="logo" />
+                </a>
+                <nav class="nav">
+                    <ul class="menu">
+                        <li class="menu-item"><a href="index.html" class="menu-link">Home</a></li>
+                        <li class="menu-item"><a href="aboutus.html" class="menu-link">About us</a></li>
+                        <li class="menu-item"><a href="product.html" class="menu-link">Product</a></li>
+                        <li class="menu-item"><a href="contact.html" class="menu-link">Contact</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-block">
+                    <form action="search.html" class="form">
+                        <input type="text" class="search" placeholder="search" />
+                        <button class="btn header-btn"></button>
+                    </form>
+                    <a href="cart.html" class="cart"></a>
+                    <a href="login.html" class="header-link link-bg--green">Register Now</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="body">
+        <main>
+            <div class="search-bar">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="Search for organic food..." 
+                    oninput="searchProducts()">
+                    
+                <br><button id="search-button" onclick="searchProducts()">Search</button>
+            </div>
+            <div class="search-results">
+                
+                <h2>Search Results:</h2>
+                <br>
+                <ul id="results-list"></ul>
+            </div>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="container footer-wrapper">
+            <div class="footer-block">
+                <span class="footer-logo">
+                    <img src="images/logo.jpg" alt="logo-footer" />
+                </span>
+                <br>
+                
+
+            </div>
+            <div class="footer-block">
+                <span class="footer-title">Navigation</span>
+                <ul class="footer-menu">
+                    <li class="footer-item">
+                        <a href="aboutus.html" class="footer-link">About Us</a>
+                    </li>
+                    <li class="footer-item">
+                        <a href="product.html" class="footer-link">Product</a>
+                    </li>
+                    <li class="footer-item">
+                        <a href="contact.html" class="footer-link">Contact</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="footer-block">
+                <span class="footer-title">Resources</span>
+                <ul class="footer-menu">
+                    <li class="footer-item">
+                        <a href="reviewpage.html" class="footer-link">Reviews</a>
+                    </li>
+                    <li class="footer-item">
+                        <a href="" class="footer-link">Blog</a>
+                    </li>
+                    <li class="footer-item">
+                        <a href="service.html" class="footer-link">Services</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="footer-block">
+                <span class="footer-title">Contact Us</span>
+                
+                <div class="inner-text footer-text">
+                    <span class="footer-email">Email: organicfood@gmail.com</span>
+                    <p class="footer-address">Address: 123 Organic St, Green City</p>
+                    <p class="footer-phone">Phone: +1 (234) 567-890</p>
+                </div>
+                <ul class="footer-social">
+                    <li>
+                        <a href="https://www.facebook.com/"><img src="images/facebook.svg" alt="facebook" /></a>
+                    </li>
+                    <li>
+                        <a href="https://x.com/i/flow/login"><img src="images/twitter.svg" alt="twitter" /></a>
+                    </li>
+                    <li>
+                        <a href="https://www.instagram.com/">
+                            <img src="images/instagram.svg" alt="instagram" />
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script src="search.js"></script>
+        
+</body>
+
+</html>
